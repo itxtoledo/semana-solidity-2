@@ -1,7 +1,10 @@
 
+import { createRef, DetailedHTMLProps, HTMLAttributes, useRef } from 'react';
 import './App.css';
 
 function App() {
+    const descricaoRef = createRef<HTMLDivElement>();
+    const lateralRef = createRef<HTMLDivElement>();
 
   const clicou = (key: string) => {};
 
@@ -17,16 +20,15 @@ function App() {
                             <span>VEREADOR</span>
                         </div>
                         <div className="d-1-3">
-                            <div className="numero pisca"></div>
-                            <div className="numero"></div>
+                            <div className={`numero ${piscaNumero ? 'pisca' : ''}`}></div>
                         </div>
-                        <div className="d-1-4">
+                        <div className="d-1-4" ref={descricaoRef}>
                             Nome: FULANO<br/>
                             Partido: NOVO<br/>
                             Vice-Prefeito: BELTRANO<br/>
                         </div>
                     </div>
-                    <div className="d-1-right">
+                    <div className="d-1-right" ref={lateralRef}>
                         <div className="d-1-image">
                             <img src="Images/hagar.PNG" alt="" />
                             Prefeito
