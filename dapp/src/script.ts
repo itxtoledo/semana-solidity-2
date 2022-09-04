@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { etapas } from "./etapas";
 import { useAudio } from "./hooks/useAudio";
 
@@ -26,7 +26,7 @@ export const useUrna = (
   const [, playCorrigeAudio] = useAudio("audio/corrige.mp3");
   const [, playConfirmaAudio] = useAudio("audio/confirma.mp3");
 
-  const comecarEtapa = () => {
+  const comecarEtapa = useCallback(() => {
     let etapa = etapas[etapaAtual.current];
     let numeroHTML = "";
 
@@ -52,7 +52,7 @@ export const useUrna = (
     setAvisoStyle({ display: "none" });
 
     lateral.current!.innerHTML = "";
-  };
+  }, [descricao, lateral, numeroRef]);
 
   const atualizaInterface = () => {
     let etapa = etapas[etapaAtual.current];
