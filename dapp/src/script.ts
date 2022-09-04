@@ -63,9 +63,8 @@ export const useUrna = (
     if (candidato) {
       setSeuVotoParaStyle({ display: "block" });
       setAvisoStyle({ display: "block" });
-      //descricao.innerHTML = 'Nome: ${candidato.nome}<br/>Partido: ${candidato.partido}';
-      descricao.current!.innerHTML =
-        "Nome: " + candidato.nome + "<br/>" + "Partido: " + candidato.partido;
+
+      descricao.current!.innerHTML = `Nome: ${candidato.nome}<br/>Partido: ${candidato.partido}`;
 
       let fotosHTML = "";
       for (let i in candidato.fotos) {
@@ -178,7 +177,7 @@ export const useUrna = (
 
   useEffect(() => {
     comecarEtapa();
-  }, []);
+  }, [comecarEtapa]);
 
   return {
     comecarEtapa,
