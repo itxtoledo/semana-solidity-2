@@ -76,8 +76,7 @@ function App() {
       <div className="esquerda">
         <div className="topo-esquerda">
           <div className="logo">
-            {" "}
-            <img src="Images/brasao.png" alt="" />{" "}
+            <img src="image/app/brasao.png" alt="" />{" "}
           </div>
           <div className="Justica-eleitoral">
             JUSTIÇA
