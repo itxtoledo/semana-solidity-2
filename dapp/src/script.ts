@@ -54,7 +54,7 @@ export const useUrna = (
     lateral.current!.innerHTML = "";
   }, [descricao, lateral, numeroRef]);
 
-  const atualizaInterface = () => {
+  const atualizaInterface = useCallback(() => {
     let etapa = etapas[etapaAtual.current];
     let candidato = etapa.candidatos.find(
       (item) => item.numero === numero.current
@@ -93,26 +93,29 @@ export const useUrna = (
       descricao.current!.innerHTML =
         '<div class="aviso--grande pisca">VOTO NULO</div>';
     }
-  };
+  }, [descricao, lateral]);
 
-  const clicou = (n: string) => {
-    playNumerosAudio();
+  const clicou = useCallback(
+    (n: string) => {
+      playNumerosAudio();
 
-    let elNumero = document.querySelector(".numero.pisca");
-    if (elNumero !== null) {
-      elNumero.innerHTML = n;
-      //numero = '${numero}${n}';
-      numero.current = numero.current + n;
+      let elNumero = document.querySelector(".numero.pisca");
+      if (elNumero !== null) {
+        elNumero.innerHTML = n;
+        //numero = '${numero}${n}';
+        numero.current = numero.current + n;
 
-      //fazer com que o campo de número pisque e após preenchido passe para o proximo campo
-      elNumero.classList.remove("pisca");
-      if (elNumero.nextElementSibling !== null) {
-        elNumero.nextElementSibling.classList.add("pisca");
-      } else {
-        atualizaInterface();
+        //fazer com que o campo de número pisque e após preenchido passe para o proximo campo
+        elNumero.classList.remove("pisca");
+        if (elNumero.nextElementSibling !== null) {
+          elNumero.nextElementSibling.classList.add("pisca");
+        } else {
+          atualizaInterface();
+        }
       }
-    }
-  };
+    },
+    [atualizaInterface, playNumerosAudio]
+  );
 
   const branco = () => {
     // numero.current === "";
@@ -177,7 +180,8 @@ export const useUrna = (
 
   useEffect(() => {
     comecarEtapa();
-  }, [comecarEtapa]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return {
     comecarEtapa,
