@@ -33,14 +33,17 @@ contract Urna {
         external
         onlyInPreElection
         onlyManager
+        returns (bool)
     {
         require(candidates[number].name == "", "candidate already exists");
         candidates[number].name = name;
         availableCandidates.push(number);
+
+        return true;
     }
 
     function vote(uint8 number) external onlyInElectionWindow {
-        require(candidates[number].name != "", "candidate does not exist");
+        require(candidates[number].name != "", "candidate does not exists");
         require(!voted[msg.sender], "already voted");
 
         voted[msg.sender] = true;

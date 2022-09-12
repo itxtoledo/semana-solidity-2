@@ -16,21 +16,71 @@ describe("Urna", function () {
     return { urna, manager, otherAccount };
   }
 
-  async function setValidElectionWindow(urna: any): Promise<[number, number]> {
-    const currentTime = await time.latest();
+  async function setValidElectionWindow(
+    urna: any,
+    baseTime?: number
+  ): Promise<[number, number]> {
+    const currentTime = baseTime ?? (await time.latest());
     const finalTime = currentTime + 500;
     await urna.setElectionWindow(currentTime, finalTime);
-    return [currentTime, currentTime ];
-
+    return [currentTime, currentTime];
   }
 
   describe("Deployment", function () {
-    it("Should set the right owner", async function () {
+    it("Should set the right manager", async function () {
       const { urna, manager } = await loadFixture(deployUrnaFixture);
 
       expect(await urna.manager()).to.equal(manager.address);
     });
+  });
 
+  describe("Manager", function () {
+    it("Should set election window", async function () {
+      const { urna } = await loadFixture(deployUrnaFixture);
+      await setValidElectionWindow(urna);
+
+      const currentTime = await time.latest();
+
+      expect(await urna.startDate()).to.be.lessThanOrEqual(currentTime);
+      expect(await urna.endDate()).to.be.greaterThan(currentTime);
+    });
+
+    it("Should create candidate", async function () {
+      const { urna } = await loadFixture(deployUrnaFixture);
+      const currentTime = await time.latest();
+
+      await setValidElectionWindow(urna, currentTime + 1000);
+
+      expect(
+        await urna.createCandidate(
+          ethers.utils.formatBytes32String("Bolsonaro"),
+          22
+        )
+      ).to.not.be.reverted;
+
+      // expect(await urna.availableCandidates()).to.be.eq(1); TODO
+
+    });
+
+    it("Shouldn't fail if candidate already exists", async function () {
+      const { urna } = await loadFixture(deployUrnaFixture);
+
+      const currentTime = await time.latest();
+
+      await setValidElectionWindow(urna, currentTime + 1000);
+
+      await urna.createCandidate(
+        ethers.utils.formatBytes32String("Bolsonaro"),
+        22
+      );
+
+      expect(
+        urna.createCandidate(ethers.utils.formatBytes32String("Bolsonaro"), 22)
+      ).to.be.revertedWith("candidate already exists");
+    });
+  });
+
+  describe("Voting", function () {
     it("Should fail if the election end", async function () {
       const { urna } = await loadFixture(deployUrnaFixture);
       const [, finalTime] = await setValidElectionWindow(urna);
@@ -40,76 +90,26 @@ describe("Urna", function () {
       await expect(urna.vote(1)).to.be.revertedWith("election has ended");
     });
 
-    it("Should fail if the candidate does not exist", async function () {
+    it("Should fail if the candidate does not exists", async function () {
       const { urna } = await loadFixture(deployUrnaFixture);
       await setValidElectionWindow(urna);
-      await expect(urna.vote(1)).to.be.revertedWith("candidate does not exist");
+      await expect(urna.vote(1)).to.be.revertedWith(
+        "candidate does not exists"
+      );
+    });
+
+    it("Should vote in a candidate", async function () {
+      const { urna } = await loadFixture(deployUrnaFixture);
+      const currentTime = await time.latest();
+
+      await setValidElectionWindow(urna, currentTime + 1000);
+
+      await urna.createCandidate(
+        ethers.utils.formatBytes32String("Bolsonaro"),
+        22
+      );
+
+      expect(await urna.vote(22)).to.not.be.reverted;
     });
   });
-
-  // describe("Withdrawals", function () {
-  //   describe("Validations", function () {
-  //     it("Should revert with the right error if called too soon", async function () {
-  //       const { urna } = await loadFixture(deployUrnaFixture);
-
-  //       await expect(urna.withdraw()).to.be.revertedWith(
-  //         "You can't withdraw yet"
-  //       );
-  //     });
-
-  //     it("Should revert with the right error if called from another account", async function () {
-  //       const { urna, unurnaTime, otherAccount } = await loadFixture(
-  //         deployUrnaFixture
-  //       );
-
-  //       // We can increase the time in Hardhat Network
-  //       await time.increaseTo(unurnaTime);
-
-  //       // We use urna.connect() to send a transaction from another account
-  //       await expect(urna.connect(otherAccount).withdraw()).to.be.revertedWith(
-  //         "You aren't the owner"
-  //       );
-  //     });
-
-  //     it("Shouldn't fail if the unurnaTime has arrived and the owner calls it", async function () {
-  //       const { urna, unurnaTime } = await loadFixture(
-  //         deployUrnaFixture
-  //       );
-
-  //       // Transactions are sent using the first signer by default
-  //       await time.increaseTo(unurnaTime);
-
-  //       await expect(urna.withdraw()).not.to.be.reverted;
-  //     });
-  //   });
-
-  //   describe("Events", function () {
-  //     it("Should emit an event on withdrawals", async function () {
-  //       const { urna, unurnaTime, urnaedAmount } = await loadFixture(
-  //         deployUrnaFixture
-  //       );
-
-  //       await time.increaseTo(unurnaTime);
-
-  //       await expect(urna.withdraw())
-  //         .to.emit(urna, "Withdrawal")
-  //         .withArgs(urnaedAmount, anyValue); // We accept any value as `when` arg
-  //     });
-  //   });
-
-  //   describe("Transfers", function () {
-  //     it("Should transfer the funds to the owner", async function () {
-  //       const { urna, unurnaTime, urnaedAmount, owner } = await loadFixture(
-  //         deployUrnaFixture
-  //       );
-
-  //       await time.increaseTo(unurnaTime);
-
-  //       await expect(urna.withdraw()).to.changeEtherBalances(
-  //         [owner, urna],
-  //         [urnaedAmount, -urnaedAmount]
-  //       );
-  //      });
-  //   });
-  // });
 });
