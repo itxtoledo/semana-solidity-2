@@ -1,5 +1,4 @@
 import { time, loadFixture } from "@nomicfoundation/hardhat-network-helpers";
-import { anyValue } from "@nomicfoundation/hardhat-chai-matchers/withArgs";
 import { expect } from "chai";
 import { ethers } from "hardhat";
 
@@ -41,10 +40,10 @@ describe("Urna", function () {
       await expect(urna.vote(1)).to.be.revertedWith("election has ended");
     });
 
-    it("Should fail if the candidate dont exists", async function () {
+    it("Should fail if the candidate does not exist", async function () {
       const { urna } = await loadFixture(deployUrnaFixture);
       await setValidElectionWindow(urna);
-      await expect(urna.vote(1)).to.be.revertedWith("candidate dont exists");
+      await expect(urna.vote(1)).to.be.revertedWith("candidate does not exist");
     });
   });
 

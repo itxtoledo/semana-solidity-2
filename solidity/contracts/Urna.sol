@@ -15,7 +15,7 @@ contract Urna {
 
     mapping(address => bool) private voted;
 
-    address immutable public manager;
+    address public immutable manager;
 
     constructor() {
         manager = msg.sender;
@@ -40,11 +40,23 @@ contract Urna {
     }
 
     function vote(uint8 number) external onlyInElectionWindow {
-        require(candidates[number].name != "", "candidate dont exists");
+        require(candidates[number].name != "", "candidate does not exist");
         require(!voted[msg.sender], "already voted");
 
         voted[msg.sender] = true;
         candidates[number].votes += 1;
+    }
+
+    function votes() external view returns (Candidate[] memory) {
+        Candidate[] memory tCandidates = new Candidate[](
+            availableCandidates.length
+        );
+
+        for (uint i = 0; i < availableCandidates.length; i++) {
+            tCandidates[i] = candidates[availableCandidates[i]];
+        }
+
+        return tCandidates;
     }
 
     modifier onlyManager() {
